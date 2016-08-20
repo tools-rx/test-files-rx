@@ -3,11 +3,7 @@
 import path from 'path'
 import fs from 'fs'
 import {
-  ROOT_PATH,
-  LOCAL_PATH,
   unixStylePath,
-  rootWorkPath,
-  localWorkPath,
   cleanPath,
   buildFiles,
   buildDirectories,
@@ -19,6 +15,17 @@ import mkdirp from 'mkdirp'
 import {Observable} from 'rxjs'
 import {bashFileSearch, emptyBashFileSearchResult} from '../src/bash-file-search'
 import {concatListItems, getSubscriber, sortedFileList} from './test-helpers'
+
+const LOCAL_PATH = path.join(__dirname, '..', 'glob-test')
+const ROOT_PATH = '/tmp/glob-test'
+
+function rootWorkPath (offsetPath) {
+  return offsetPath ? path.join(ROOT_PATH, offsetPath) : ROOT_PATH
+}
+
+function localWorkPath (offsetPath) {
+  return offsetPath ? path.join(LOCAL_PATH, offsetPath) : LOCAL_PATH
+}
 
 const writeFileRx = Observable.bindNodeCallback(fs.writeFile)
 const mkdirpRx = Observable.bindNodeCallback(mkdirp)
@@ -281,8 +288,26 @@ describe('test file builder', () => {
         .subscribe(getSubscriber(done))
     })
 
+    it('should throw error if rootPath not set', (done) => {
+      let testFxn = () => {
+        buildFileSet({ localPath: LOCAL_PATH })
+          .subscribe(getSubscriber(done))
+      }
+      expect(testFxn).toThrowError('rootPath not set')
+      done()
+    })
+
+    it('should throw error if localPath not set', (done) => {
+      let testFxn = () => {
+        buildFileSet({ rootPath: '/tmp/glob-test' })
+          .subscribe(getSubscriber(done))
+      }
+      expect(testFxn).toThrowError('localPath not set')
+      done()
+    })
+
     it('should build empty file set', (done) => {
-      buildFileSet()
+      buildFileSet({ rootPath: '/tmp/glob-test', localPath: LOCAL_PATH })
         .reduce(concatListItems, [])
         .do((buildList) => {
           expect(buildList).toEqual([])
@@ -340,7 +365,7 @@ describe('test file builder', () => {
         'qwer',
         'rewq'
       ]
-      buildFileSet(defaultFileSet)
+      buildFileSet(Object.assign({}, defaultFileSet, { localPath: LOCAL_PATH }))
         .reduce(concatListItems, [])
         .do((buildList) => {
           expect(sortedFileList(buildList)).toEqual(sortedFileList(expectedBuildFiles))

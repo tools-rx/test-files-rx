@@ -4,9 +4,6 @@ import {Observable} from 'rxjs'
 import mkdirp from 'mkdirp'
 import rimraf from 'rimraf'
 
-export const ROOT_PATH = '/tmp/glob-test'
-export const LOCAL_PATH = path.join(__dirname, '..', 'glob-test')
-
 const writeFileRx = Observable.bindNodeCallback(fs.writeFile)
 const mkdirpRx = Observable.bindNodeCallback(mkdirp)
 const rimrafRx = Observable.bindNodeCallback(rimraf)
@@ -35,31 +32,31 @@ export const defaultFileSet = {
   ],
   symLinks: [
     [ 'a/symlink/a/b/c', 'a/symlink' ]
-  ]
+  ],
+  rootPath: '/tmp/glob-test',
+  localPath: null
 }
 
 export function buildFileSet (fileSet) {
   fileSet = fileSet || {}
-  return cleanPath(localWorkPath())
-    .concat(cleanPath(rootWorkPath()))
+  if (!fileSet.localPath) {
+    throw new Error('localPath not set')
+  }
+  if (!fileSet.rootPath) {
+    throw new Error('rootPath not set')
+  }
+  return cleanPath(fileSet.localPath)
+    .concat(cleanPath(fileSet.rootPath))
     .ignoreElements()
-    .concat(buildFiles(LOCAL_PATH, fileSet.localFiles))
-    .concat(buildDirectories(LOCAL_PATH, fileSet.localDirectories))
-    .concat(buildFiles(ROOT_PATH, fileSet.rootFiles))
-    .concat(buildDirectories(ROOT_PATH, fileSet.rootDirectories))
-    .concat(buildSymLinks(LOCAL_PATH, fileSet.symLinks))
+    .concat(buildFiles(fileSet.localPath, fileSet.localFiles))
+    .concat(buildDirectories(fileSet.localPath, fileSet.localDirectories))
+    .concat(buildFiles(fileSet.rootPath, fileSet.rootFiles))
+    .concat(buildDirectories(fileSet.rootPath, fileSet.rootDirectories))
+    .concat(buildSymLinks(fileSet.localPath, fileSet.symLinks))
 }
 
 export function unixStylePath (path) {
   return path.replace(/\\/g, '/')
-}
-
-export function rootWorkPath (offsetPath) {
-  return offsetPath ? path.join(ROOT_PATH, offsetPath) : ROOT_PATH
-}
-
-export function localWorkPath (offsetPath) {
-  return offsetPath ? path.join(LOCAL_PATH, offsetPath) : LOCAL_PATH
 }
 
 export function cleanPath (basePath) {
