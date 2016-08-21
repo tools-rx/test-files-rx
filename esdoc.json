@@ -1,0 +1,6 @@
+{
+  "source": "./src",
+  "destination": "./dist/docs",
+  "coverage": false,
+  "includeSource": true
+}

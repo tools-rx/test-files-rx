@@ -9,6 +9,25 @@ const mkdirpRx = Observable.bindNodeCallback(mkdirp)
 const rimrafRx = Observable.bindNodeCallback(rimraf)
 const symlinkRx = Observable.bindNodeCallback(fs.symlink)
 
+/**
+ * @typedef FileSet
+ * @type {object}
+ * @desc Specification for building a set of test files.
+ * @property {Array<string>} localFiles A list of files to create in the local path.
+ * @property {Array<string>} localDirectories A list of directories to create in the local path.
+ * @property {Array<Array<string>>} symLinks A list of symbolic links to create, consiting of a pair
+ *    of paths, where the first item is the symbolic link source, and the second item is the
+ *    destination of the symbolic link. This will be created in the local path.
+ * @property {Array<string>} rootFiles A list of files to create in the root path.
+ * @property {Array<string>} rootDirectories A list of directories to create in the root path.
+ * @property {string} rootPath the path that that is specified from the root (like "/tmp/glob-test")
+ * @property {string} localPath the path for local files (usually set within the project itself).
+ */
+
+/**
+ * An const object that represents a default set of test files to generate.
+ * @type {FileSet}
+ */
 export const defaultFileSet = {
   localFiles: [
     'a/.abcdef/x/y/z/a',
@@ -37,6 +56,11 @@ export const defaultFileSet = {
   localPath: null
 }
 
+/**
+ * Build a set of test files.
+ * @param {FileSet} fileSet Options describing the set of files to build.
+ * @return {Observable<string>} An observable for the build operation.
+ */
 export function buildFileSet (fileSet) {
   fileSet = fileSet || {}
   if (!fileSet.localPath) {
@@ -55,15 +79,33 @@ export function buildFileSet (fileSet) {
     .concat(buildSymLinks(fileSet.localPath, fileSet.symLinks))
 }
 
+/**
+ * Normalizes a path to use forward (Unix-style) slashes.
+ * @param {string} path The path to be normalized.
+ * @return {string} A normalized path.
+ */
 export function unixStylePath (path) {
   return path.replace(/\\/g, '/')
 }
 
+/**
+ * Removes all files from a path.
+ * @param {string} basePath The path to be cleaned.
+ * @return {Observable<string>} An observable for the clean operation.
+ */
 export function cleanPath (basePath) {
   return rimrafRx(basePath)
     .mergeMap(() => mkdirpRx(basePath), () => basePath)
 }
 
+/**
+ * Builds a set of files within a base path.
+ * @param {string} basePath The path in which to build files.
+ * @param {Array<string>} fileList An array of file names to build within the path. Any paths
+ *    included in the name should be relative to the base path.
+ * @return {Observable<string>} An observable for the build operation.
+ * @desc Only simple content is written to the file.
+ */
 export function buildFiles (basePath, fileList) {
   return Observable.from(fileList || [])
     .map((fileName) => {
@@ -79,6 +121,13 @@ export function buildFiles (basePath, fileList) {
     .mergeMap((file) => writeFileRx(file.full, `content ${file.name}`), (file) => file.originalName)
 }
 
+/**
+ * Builds a set of directories within a base path.
+ * @param {string} basePath The path in which to build directories.
+ * @param {Array<string>} directoryList An array of directory names to build within the path. Any paths
+ *    included in the name should be relative to the base path.
+ * @return {Observable<string>} An observable for the build operation.
+ */
 export function buildDirectories (basePath, directoryList) {
   return Observable.from(directoryList || [])
     .map((directoryName) => {
@@ -91,6 +140,13 @@ export function buildDirectories (basePath, directoryList) {
     .mergeMap((directory) => mkdirpRx(directory.dirName), (directory) => directory.originalName)
 }
 
+/**
+ * Builds a set of symbolic links within a base path.
+ * @param {string} basePath The path in which to build files.
+ * @param {Array<Array<string>>} symLinkList An array of pairs of names to build within the path, where the
+ *    first item is the source of the link and the second item is the path that the link points to.
+ * @return {Observable<string>} An observable for the build operation.
+ */
 export function buildSymLinks (basePath, symLinkList) {
   return Observable.from(symLinkList || [])
     .map((paths) => {
