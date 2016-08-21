@@ -6,8 +6,8 @@
   "jsnext:main": "src/index.js",
   "scripts": {
     "test": "babel-node scripts/run-tests",
-    "build": "babel --out-dir dist src",
-    "prebuild": "npm-run-all lint test clean",
+    "build": "npm-run-all lint test clean build:js",
+    "build:js": "babel --out-dir dist src",
     "lint": "standard",
     "clean": "rimraf dist"
   },
