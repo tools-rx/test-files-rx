@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/test-file-builder.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/tools-rx/test-files-rx.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bashFileSearch">bashFileSearch</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildDirectories">buildDirectories</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildFileSet">buildFileSet</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildFiles">buildFiles</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildSymLinks">buildSymLinks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cleanPath">cleanPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-unixStylePath">unixStylePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-emptyBashFileSearchResult">emptyBashFileSearchResult</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-defaultFileSet">defaultFileSet</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Observable">Observable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SearchResult">SearchResult</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-FileSet">FileSet</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/test-file-builder.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import path from &apos;path&apos;
+import fs from &apos;fs&apos;
+import {Observable} from &apos;rxjs&apos;
+import mkdirp from &apos;mkdirp&apos;
+import rimraf from &apos;rimraf&apos;
+
+const writeFileRx = Observable.bindNodeCallback(fs.writeFile)
+const mkdirpRx = Observable.bindNodeCallback(mkdirp)
+const rimrafRx = Observable.bindNodeCallback(rimraf)
+const symlinkRx = Observable.bindNodeCallback(fs.symlink)
+
+/**
+ * @typedef FileSet
+ * @type {object}
+ * @desc Specification for building a set of test files.
+ * @property {Array&lt;string&gt;} localFiles A list of files to create in the local path.
+ * @property {Array&lt;string&gt;} localDirectories A list of directories to create in the local path.
+ * @property {Array&lt;Array&lt;string&gt;&gt;} symLinks A list of symbolic links to create, consiting of a pair
+ *    of paths, where the first item is the symbolic link source, and the second item is the
+ *    destination of the symbolic link. This will be created in the local path.
+ * @property {Array&lt;string&gt;} rootFiles A list of files to create in the root path.
+ * @property {Array&lt;string&gt;} rootDirectories A list of directories to create in the root path.
+ * @property {string} rootPath the path that that is specified from the root (like &quot;/tmp/glob-test&quot;)
+ * @property {string} localPath the path for local files (usually set within the project itself).
+ */
+
+/**
+ * An const object that represents a default set of test files to generate.
+ * @type {FileSet}
+ */
+export const defaultFileSet = {
+  localFiles: [
+    &apos;a/.abcdef/x/y/z/a&apos;,
+    &apos;a/abcdef/g/h&apos;,
+    &apos;a/abcfed/g/h&apos;,
+    &apos;a/b/c/d&apos;,
+    &apos;a/bc/e/f&apos;,
+    &apos;a/c/d/c/b&apos;,
+    &apos;a/cb/e/f&apos;
+  ],
+  localDirectories: [],
+  rootFiles: [],
+  rootDirectories: [
+    &apos;foo&apos;,
+    &apos;bar&apos;,
+    &apos;baz&apos;,
+    &apos;asdf&apos;,
+    &apos;quux&apos;,
+    &apos;qwer&apos;,
+    &apos;rewq&apos;
+  ],
+  symLinks: [
+    [ &apos;a/symlink/a/b/c&apos;, &apos;a/symlink&apos; ]
+  ],
+  rootPath: &apos;/tmp/glob-test&apos;,
+  localPath: null
+}
+
+/**
+ * Build a set of test files.
+ * @param {FileSet} fileSet Options describing the set of files to build.
+ * @return {Observable&lt;string&gt;} An observable for the build operation.
+ */
+export function buildFileSet (fileSet) {
+  fileSet = fileSet || {}
+  if (!fileSet.localPath) {
+    throw new Error(&apos;localPath not set&apos;)
+  }
+  if (!fileSet.rootPath) {
+    throw new Error(&apos;rootPath not set&apos;)
+  }
+  return cleanPath(fileSet.localPath)
+    .concat(cleanPath(fileSet.rootPath))
+    .ignoreElements()
+    .concat(buildFiles(fileSet.localPath, fileSet.localFiles))
+    .concat(buildDirectories(fileSet.localPath, fileSet.localDirectories))
+    .concat(buildFiles(fileSet.rootPath, fileSet.rootFiles))
+    .concat(buildDirectories(fileSet.rootPath, fileSet.rootDirectories))
+    .concat(buildSymLinks(fileSet.localPath, fileSet.symLinks))
+}
+
+/**
+ * Normalizes a path to use forward (Unix-style) slashes.
+ * @param {string} path The path to be normalized.
+ * @return {string} A normalized path.
+ */
+export function unixStylePath (path) {
+  return path.replace(/\\/g, &apos;/&apos;)
+}
+
+/**
+ * Removes all files from a path.
+ * @param {string} basePath The path to be cleaned.
+ * @return {Observable&lt;string&gt;} An observable for the clean operation.
+ */
+export function cleanPath (basePath) {
+  return rimrafRx(basePath)
+    .mergeMap(() =&gt; mkdirpRx(basePath), () =&gt; basePath)
+}
+
+/**
+ * Builds a set of files within a base path.
+ * @param {string} basePath The path in which to build files.
+ * @param {Array&lt;string&gt;} fileList An array of file names to build within the path. Any paths
+ *    included in the name should be relative to the base path.
+ * @return {Observable&lt;string&gt;} An observable for the build operation.
+ * @desc Only simple content is written to the file.
+ */
+export function buildFiles (basePath, fileList) {
+  return Observable.from(fileList || [])
+    .map((fileName) =&gt; {
+      let full = path.join(basePath, fileName)
+      return {
+        path: path.dirname(full),
+        name: path.basename(full),
+        full,
+        originalName: fileName
+      }
+    })
+    .mergeMap((file) =&gt; mkdirpRx(file.path), (file) =&gt; file)
+    .mergeMap((file) =&gt; writeFileRx(file.full, `content ${file.name}`), (file) =&gt; file.originalName)
+}
+
+/**
+ * Builds a set of directories within a base path.
+ * @param {string} basePath The path in which to build directories.
+ * @param {Array&lt;string&gt;} directoryList An array of directory names to build within the path. Any paths
+ *    included in the name should be relative to the base path.
+ * @return {Observable&lt;string&gt;} An observable for the build operation.
+ */
+export function buildDirectories (basePath, directoryList) {
+  return Observable.from(directoryList || [])
+    .map((directoryName) =&gt; {
+      let dirName = path.join(basePath, directoryName)
+      return {
+        dirName,
+        originalName: directoryName
+      }
+    })
+    .mergeMap((directory) =&gt; mkdirpRx(directory.dirName), (directory) =&gt; directory.originalName)
+}
+
+/**
+ * Builds a set of symbolic links within a base path.
+ * @param {string} basePath The path in which to build files.
+ * @param {Array&lt;Array&lt;string&gt;&gt;} symLinkList An array of pairs of names to build within the path, where the
+ *    first item is the source of the link and the second item is the path that the link points to.
+ * @return {Observable&lt;string&gt;} An observable for the build operation.
+ */
+export function buildSymLinks (basePath, symLinkList) {
+  return Observable.from(symLinkList || [])
+    .map((paths) =&gt; {
+      let [symLinkName, directoryName] = paths
+      let dirName = path.join(basePath, directoryName)
+      let symLink = path.join(basePath, symLinkName)
+      return { dirName, symLink, originalName: symLinkName }
+    })
+    .mergeMap((info) =&gt; {
+      let symLinkPath = info.symLink
+      if (process.platform === &apos;win32&apos;) {
+        symLinkPath = path.dirname(symLinkPath)
+      }
+      return mkdirpRx(symLinkPath).map(() =&gt; info)
+    })
+    .mergeMap((info) =&gt; {
+      return symlinkRx(info.dirName, info.symLink, &apos;junction&apos;).map(() =&gt; info.originalName)
+    })
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.8)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

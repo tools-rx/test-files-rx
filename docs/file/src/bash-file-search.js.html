@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/bash-file-search.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/tools-rx/test-files-rx.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-bashFileSearch">bashFileSearch</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildDirectories">buildDirectories</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildFileSet">buildFileSet</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildFiles">buildFiles</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildSymLinks">buildSymLinks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cleanPath">cleanPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-unixStylePath">unixStylePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-emptyBashFileSearchResult">emptyBashFileSearchResult</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-defaultFileSet">defaultFileSet</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Observable">Observable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SearchResult">SearchResult</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-FileSet">FileSet</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/bash-file-search.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import {Observable} from &apos;rxjs&apos;
+import {spawn} from &apos;child_process&apos;
+import _ from &apos;lodash&apos;
+import {unixStylePath} from &apos;./test-file-builder&apos;
+
+/**
+ * @typedef Observable
+ * @type {object}
+ * @desc An RxJS observable.
+ */
+
+/**
+ * @typedef SearchResult
+ * @type {object}
+ * @desc A result from the Bash search.
+ * @property {string} pattern The original glob pattern that was used.
+ * @property {Array&lt;string&gt;} matches The list of file names that matched the
+ *    glob pattern, relative to the base directory that was passed. The
+ *    matches are sorted in lower-case alphabetical order.
+ */
+
+/**
+ * An const object that represents a result where no files were found.
+ * @type {SearchResult}
+ */
+export const emptyBashFileSearchResult = {
+  pattern: &apos;**/*&apos;,
+  matches: [
+  ]
+}
+
+/**
+ * Search for glob patterns by spawning out to the Bash shell.
+ * @param {string} pattern A glob pattern to search for.
+ * @param {string} basedir The base directory to start the search from.
+ * @return {Observable&lt;SearchResult&gt;} An observable containing the SearchResult result object.
+ */
+export function bashFileSearch (pattern, basedir) {
+  let bashCommandLine = [
+    &apos;-O&apos;, &apos;globstar&apos;,
+    &apos;-O&apos;, &apos;extglob&apos;,
+    &apos;-O&apos;, &apos;nullglob&apos;,
+    &apos;-c&apos;,
+    `for i in ${pattern}; do echo $i; done`
+  ]
+
+  return Observable.create((observer) =&gt; {
+    let cp = spawn(&apos;bash&apos;, bashCommandLine, { cwd: basedir })
+    let outputBuffer = new Buffer(0)
+    cp.stdout.on(&apos;data&apos;, (data) =&gt; {
+      outputBuffer = Buffer.concat([ outputBuffer, data ])
+    })
+    cp.stderr.on(&apos;data&apos;, (data) =&gt; console.error(&apos;bash: &apos; + data))
+    cp.on(&apos;close&apos;, (code) =&gt; {
+      if (code) {
+        observer.error(&apos;bash test should finish nicely&apos;)
+      } else {
+        let matches = _(outputBuffer.toString().split(/\r*\n/))
+          .filter((t) =&gt; t !== &apos;&apos;)
+          .map((t) =&gt; unixStylePath(t.replace(/\/$/, &apos;&apos;)))
+          .sortBy((t) =&gt; t.toLowerCase())
+          .uniq()
+          .value()
+        observer.next({ pattern, matches })
+        observer.complete()
+      }
+    })
+  })
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.8)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
