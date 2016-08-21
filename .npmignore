@@ -3,3 +3,5 @@ node_modules/
 glob-test/
 tests/
 scripts/
+docs/
+esdoc.json
