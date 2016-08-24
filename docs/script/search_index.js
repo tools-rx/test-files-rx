@@ -402,6 +402,12 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
+    "src/index.js",
+    "file/src/index.js.html",
+    "src/index.js",
+    "file"
+  ],
+  [
     "src/test-file-builder.js",
     "file/src/test-file-builder.js.html",
     "src/test-file-builder.js",

@@ -144,6 +144,19 @@
     "kind": "file",
     "static": true,
     "variation": null,
+    "name": "src/index.js",
+    "memberof": null,
+    "longname": "src/index.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 2,
+    "content": "\r\nexport {emptyBashFileSearchResult, bashFileSearch} from './bash-file-search'\r\nexport {\r\n  defaultFileSet,\r\n  buildFileSet,\r\n  unixStylePath,\r\n  cleanPath,\r\n  buildFiles,\r\n  buildDirectories,\r\n  buildSymLinks\r\n} from './test-file-builder'\r\n"
+  },
+  {
+    "__docId__": 6,
+    "kind": "file",
+    "static": true,
+    "variation": null,
     "name": "src/test-file-builder.js",
     "memberof": null,
     "longname": "src/test-file-builder.js",
@@ -153,7 +166,7 @@
     "content": "import path from 'path'\r\nimport fs from 'fs'\r\nimport {Observable} from 'rxjs'\r\nimport mkdirp from 'mkdirp'\r\nimport rimraf from 'rimraf'\r\n\r\nconst writeFileRx = Observable.bindNodeCallback(fs.writeFile)\r\nconst mkdirpRx = Observable.bindNodeCallback(mkdirp)\r\nconst rimrafRx = Observable.bindNodeCallback(rimraf)\r\nconst symlinkRx = Observable.bindNodeCallback(fs.symlink)\r\n\r\n/**\r\n * @typedef FileSet\r\n * @type {object}\r\n * @desc Specification for building a set of test files.\r\n * @property {Array<string>} localFiles A list of files to create in the local path.\r\n * @property {Array<string>} localDirectories A list of directories to create in the local path.\r\n * @property {Array<Array<string>>} symLinks A list of symbolic links to create, consiting of a pair\r\n *    of paths, where the first item is the symbolic link source, and the second item is the\r\n *    destination of the symbolic link. This will be created in the local path.\r\n * @property {Array<string>} rootFiles A list of files to create in the root path.\r\n * @property {Array<string>} rootDirectories A list of directories to create in the root path.\r\n * @property {string} rootPath the path that that is specified from the root (like \"/tmp/glob-test\")\r\n * @property {string} localPath the path for local files (usually set within the project itself).\r\n */\r\n\r\n/**\r\n * An const object that represents a default set of test files to generate.\r\n * @type {FileSet}\r\n */\r\nexport const defaultFileSet = {\r\n  localFiles: [\r\n    'a/.abcdef/x/y/z/a',\r\n    'a/abcdef/g/h',\r\n    'a/abcfed/g/h',\r\n    'a/b/c/d',\r\n    'a/bc/e/f',\r\n    'a/c/d/c/b',\r\n    'a/cb/e/f'\r\n  ],\r\n  localDirectories: [],\r\n  rootFiles: [],\r\n  rootDirectories: [\r\n    'foo',\r\n    'bar',\r\n    'baz',\r\n    'asdf',\r\n    'quux',\r\n    'qwer',\r\n    'rewq'\r\n  ],\r\n  symLinks: [\r\n    [ 'a/symlink/a/b/c', 'a/symlink' ]\r\n  ],\r\n  rootPath: '/tmp/glob-test',\r\n  localPath: null\r\n}\r\n\r\n/**\r\n * Build a set of test files.\r\n * @param {FileSet} fileSet Options describing the set of files to build.\r\n * @return {Observable<string>} An observable for the build operation.\r\n */\r\nexport function buildFileSet (fileSet) {\r\n  fileSet = fileSet || {}\r\n  if (!fileSet.localPath) {\r\n    throw new Error('localPath not set')\r\n  }\r\n  if (!fileSet.rootPath) {\r\n    throw new Error('rootPath not set')\r\n  }\r\n  return cleanPath(fileSet.localPath)\r\n    .concat(cleanPath(fileSet.rootPath))\r\n    .ignoreElements()\r\n    .concat(buildFiles(fileSet.localPath, fileSet.localFiles))\r\n    .concat(buildDirectories(fileSet.localPath, fileSet.localDirectories))\r\n    .concat(buildFiles(fileSet.rootPath, fileSet.rootFiles))\r\n    .concat(buildDirectories(fileSet.rootPath, fileSet.rootDirectories))\r\n    .concat(buildSymLinks(fileSet.localPath, fileSet.symLinks))\r\n}\r\n\r\n/**\r\n * Normalizes a path to use forward (Unix-style) slashes.\r\n * @param {string} path The path to be normalized.\r\n * @return {string} A normalized path.\r\n */\r\nexport function unixStylePath (path) {\r\n  return path.replace(/\\\\/g, '/')\r\n}\r\n\r\n/**\r\n * Removes all files from a path.\r\n * @param {string} basePath The path to be cleaned.\r\n * @return {Observable<string>} An observable for the clean operation.\r\n */\r\nexport function cleanPath (basePath) {\r\n  return rimrafRx(basePath)\r\n    .mergeMap(() => mkdirpRx(basePath), () => basePath)\r\n}\r\n\r\n/**\r\n * Builds a set of files within a base path.\r\n * @param {string} basePath The path in which to build files.\r\n * @param {Array<string>} fileList An array of file names to build within the path. Any paths\r\n *    included in the name should be relative to the base path.\r\n * @return {Observable<string>} An observable for the build operation.\r\n * @desc Only simple content is written to the file.\r\n */\r\nexport function buildFiles (basePath, fileList) {\r\n  return Observable.from(fileList || [])\r\n    .map((fileName) => {\r\n      let full = path.join(basePath, fileName)\r\n      return {\r\n        path: path.dirname(full),\r\n        name: path.basename(full),\r\n        full,\r\n        originalName: fileName\r\n      }\r\n    })\r\n    .mergeMap((file) => mkdirpRx(file.path), (file) => file)\r\n    .mergeMap((file) => writeFileRx(file.full, `content ${file.name}`), (file) => file.originalName)\r\n}\r\n\r\n/**\r\n * Builds a set of directories within a base path.\r\n * @param {string} basePath The path in which to build directories.\r\n * @param {Array<string>} directoryList An array of directory names to build within the path. Any paths\r\n *    included in the name should be relative to the base path.\r\n * @return {Observable<string>} An observable for the build operation.\r\n */\r\nexport function buildDirectories (basePath, directoryList) {\r\n  return Observable.from(directoryList || [])\r\n    .map((directoryName) => {\r\n      let dirName = path.join(basePath, directoryName)\r\n      return {\r\n        dirName,\r\n        originalName: directoryName\r\n      }\r\n    })\r\n    .mergeMap((directory) => mkdirpRx(directory.dirName), (directory) => directory.originalName)\r\n}\r\n\r\n/**\r\n * Builds a set of symbolic links within a base path.\r\n * @param {string} basePath The path in which to build files.\r\n * @param {Array<Array<string>>} symLinkList An array of pairs of names to build within the path, where the\r\n *    first item is the source of the link and the second item is the path that the link points to.\r\n * @return {Observable<string>} An observable for the build operation.\r\n */\r\nexport function buildSymLinks (basePath, symLinkList) {\r\n  return Observable.from(symLinkList || [])\r\n    .map((paths) => {\r\n      let [symLinkName, directoryName] = paths\r\n      let dirName = path.join(basePath, directoryName)\r\n      let symLink = path.join(basePath, symLinkName)\r\n      return { dirName, symLink, originalName: symLinkName }\r\n    })\r\n    .mergeMap((info) => {\r\n      let symLinkPath = info.symLink\r\n      if (process.platform === 'win32') {\r\n        symLinkPath = path.dirname(symLinkPath)\r\n      }\r\n      return mkdirpRx(symLinkPath).map(() => info)\r\n    })\r\n    .mergeMap((info) => {\r\n      return symlinkRx(info.dirName, info.symLink, 'junction').map(() => info.originalName)\r\n    })\r\n}\r\n"
   },
   {
-    "__docId__": 6,
+    "__docId__": 7,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -174,7 +187,7 @@
     }
   },
   {
-    "__docId__": 7,
+    "__docId__": 8,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -195,7 +208,7 @@
     }
   },
   {
-    "__docId__": 8,
+    "__docId__": 9,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -216,7 +229,7 @@
     }
   },
   {
-    "__docId__": 9,
+    "__docId__": 10,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -237,7 +250,7 @@
     }
   },
   {
-    "__docId__": 10,
+    "__docId__": 11,
     "kind": "typedef",
     "static": true,
     "variation": null,
@@ -327,7 +340,7 @@
     }
   },
   {
-    "__docId__": 11,
+    "__docId__": 12,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -350,7 +363,7 @@
     }
   },
   {
-    "__docId__": 12,
+    "__docId__": 13,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -386,7 +399,7 @@
     "generator": false
   },
   {
-    "__docId__": 13,
+    "__docId__": 14,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -422,7 +435,7 @@
     "generator": false
   },
   {
-    "__docId__": 14,
+    "__docId__": 15,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -458,7 +471,7 @@
     "generator": false
   },
   {
-    "__docId__": 15,
+    "__docId__": 16,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -504,7 +517,7 @@
     "generator": false
   },
   {
-    "__docId__": 16,
+    "__docId__": 17,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -550,7 +563,7 @@
     "generator": false
   },
   {
-    "__docId__": 17,
+    "__docId__": 18,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -596,7 +609,7 @@
     "generator": false
   },
   {
-    "__docId__": 19,
+    "__docId__": 20,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -609,7 +622,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 20,
+    "__docId__": 21,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -622,7 +635,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 21,
+    "__docId__": 22,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -635,7 +648,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 22,
+    "__docId__": 23,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -648,7 +661,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 23,
+    "__docId__": 24,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -661,7 +674,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 24,
+    "__docId__": 25,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -674,7 +687,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 25,
+    "__docId__": 26,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -687,7 +700,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 26,
+    "__docId__": 27,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -700,7 +713,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 27,
+    "__docId__": 28,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -713,7 +726,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 28,
+    "__docId__": 29,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -726,7 +739,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 29,
+    "__docId__": 30,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -739,7 +752,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 30,
+    "__docId__": 31,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -752,7 +765,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 31,
+    "__docId__": 32,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -765,7 +778,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 32,
+    "__docId__": 33,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -778,7 +791,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 33,
+    "__docId__": 34,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -791,7 +804,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 34,
+    "__docId__": 35,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -804,7 +817,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 35,
+    "__docId__": 36,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -817,7 +830,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 36,
+    "__docId__": 37,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -830,7 +843,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 37,
+    "__docId__": 38,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -843,7 +856,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 38,
+    "__docId__": 39,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -856,7 +869,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 39,
+    "__docId__": 40,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -869,7 +882,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 40,
+    "__docId__": 41,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -882,7 +895,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 41,
+    "__docId__": 42,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -895,7 +908,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 42,
+    "__docId__": 43,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -908,7 +921,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 43,
+    "__docId__": 44,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -921,7 +934,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 44,
+    "__docId__": 45,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -934,7 +947,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 45,
+    "__docId__": 46,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -947,7 +960,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 47,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -960,7 +973,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 48,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -973,7 +986,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 49,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -986,7 +999,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 50,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -999,7 +1012,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 51,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1012,7 +1025,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1025,7 +1038,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 53,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1038,7 +1051,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 54,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1051,7 +1064,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 55,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1064,7 +1077,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 56,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1077,7 +1090,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 57,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1090,7 +1103,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1103,7 +1116,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1116,7 +1129,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 60,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1129,7 +1142,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 61,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1142,7 +1155,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 62,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1155,7 +1168,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 63,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1168,7 +1181,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 64,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1181,7 +1194,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 65,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1194,7 +1207,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 66,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1207,7 +1220,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 68,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1220,7 +1233,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 69,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1233,7 +1246,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 70,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1246,7 +1259,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 71,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1259,7 +1272,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 72,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1272,7 +1285,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 73,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1285,7 +1298,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 74,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1298,7 +1311,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 75,
     "kind": "external",
     "static": true,
     "variation": null,
