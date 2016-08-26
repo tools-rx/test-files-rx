@@ -156,10 +156,7 @@ export function buildSymLinks (basePath, symLinkList) {
       return { dirName, symLink, originalName: symLinkName }
     })
     .mergeMap((info) => {
-      let symLinkPath = info.symLink
-      if (process.platform === 'win32') {
-        symLinkPath = path.dirname(symLinkPath)
-      }
+      let symLinkPath = path.dirname(info.symLink)
       return mkdirpRx(symLinkPath).map(() => info)
     })
     .mergeMap((info) => {
