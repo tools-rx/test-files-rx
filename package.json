@@ -6,7 +6,7 @@
   "jsnext:main": "src/index.js",
   "scripts": {
     "test": "babel-node scripts/run-tests",
-    "build": "npm-run-all lint test clean build:js build:docs",
+    "build": "npm-run-all lint test clean build:js",
     "build:js": "babel --out-dir dist src",
     "build:docs": "esdoc -c esdoc.json",
     "lint": "standard",
