@@ -3,3 +3,6 @@ node_js:
   - "6"
   - "5"
   - "4"
+before_install:
+    # Need the version of Bash (in 4.3 globs don't follow symlinks)
+    - bash --version
