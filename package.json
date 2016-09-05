@@ -1,6 +1,6 @@
 {
   "name": "test-files-rx",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Tools for building directories, files, and symbolic links for creating test scenarios.",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
