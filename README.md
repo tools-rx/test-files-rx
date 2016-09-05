@@ -2,6 +2,8 @@
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 [![npm](https://img.shields.io/npm/v/test-files-rx.svg?maxAge=2592000)](https://www.npmjs.com/package/test-files-rx)
+[![bitHound Dependencies](https://www.bithound.io/github/tools-rx/test-files-rx/badges/dependencies.svg)](https://www.bithound.io/github/tools-rx/test-files-rx/master/dependencies/npm)
+[![bitHound Dev Dependencies](https://www.bithound.io/github/tools-rx/test-files-rx/badges/devDependencies.svg)](https://www.bithound.io/github/tools-rx/test-files-rx/master/dependencies/npm)
 
 [![Travis](https://img.shields.io/travis/tools-rx/test-files-rx.svg?branch=master&maxAge=2592000)](https://travis-ci.org/tools-rx/test-files-rx)
 _(Linux/OSX)_
