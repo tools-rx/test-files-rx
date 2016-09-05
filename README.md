@@ -5,7 +5,7 @@
 [![bitHound Dependencies](https://www.bithound.io/github/tools-rx/test-files-rx/badges/dependencies.svg)](https://www.bithound.io/github/tools-rx/test-files-rx/master/dependencies/npm)
 [![bitHound Dev Dependencies](https://www.bithound.io/github/tools-rx/test-files-rx/badges/devDependencies.svg)](https://www.bithound.io/github/tools-rx/test-files-rx/master/dependencies/npm)
 
-[![Travis](https://img.shields.io/travis/tools-rx/test-files-rx.svg?branch=master&maxAge=2592000)](https://travis-ci.org/tools-rx/test-files-rx)
+[![Build Status](https://travis-ci.org/tools-rx/test-files-rx.svg?branch=master)](https://travis-ci.org/tools-rx/test-files-rx)
 _(Linux/OSX)_
 [![Visual Studio Team services](https://img.shields.io/vso/build/dfbaskin/e1edc0bb-220a-4bfc-a210-eee3d06bfcfe/1.svg?maxAge=2592000)]()
 _(Windows)_
