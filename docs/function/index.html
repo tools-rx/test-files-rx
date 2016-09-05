@@ -70,7 +70,7 @@
       <div>
         
         
-        <div data-ice="description"><p>Search for glob patterns by spawning out to the Bash shell.</p>
+        <div data-ice="description"><p>Note that Bash version 4.3 (at minimum) is required.</p>
 </div>
       </div>
     </td>
@@ -251,14 +251,16 @@
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/bash-file-search.js.html#lineNumber38">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/bash-file-search.js.html#lineNumber42">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import {bashFileSearch} from &apos;<span><a href="file/src/bash-file-search.js.html#lineNumber38">test-files-rx/src/bash-file-search.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import {bashFileSearch} from &apos;<span><a href="file/src/bash-file-search.js.html#lineNumber42">test-files-rx/src/bash-file-search.js</a></span>&apos;</code></pre></div>
   
   
-  <div data-ice="description"><p>Search for glob patterns by spawning out to the Bash shell.</p>
+  <div data-ice="description"><p>Note that Bash version 4.3 (at minimum) is required. This version does not follow
+   symlinks.  Also, since OSX by default has an older version of bash, the function assumes
+   that the &quot;homebrew install bash&quot; was used to install bash into &quot;/usr/local/bin/bash&quot;.</p>
 </div>
 
   

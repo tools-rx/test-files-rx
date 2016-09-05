@@ -1,5 +1,6 @@
 import {Observable} from 'rxjs'
 import {spawn} from 'child_process'
+import {platform} from 'os'
 import _ from 'lodash'
 import {unixStylePath} from './test-file-builder'
 
@@ -34,6 +35,9 @@ export const emptyBashFileSearchResult = {
  * @param {string} pattern A glob pattern to search for.
  * @param {string} basedir The base directory to start the search from.
  * @return {Observable<SearchResult>} An observable containing the SearchResult result object.
+ * @desc Note that Bash version 4.3 (at minimum) is required. This version does not follow
+ *    symlinks.  Also, since OSX by default has an older version of bash, the function assumes
+ *    that the "homebrew install bash" was used to install bash into "/usr/local/bin/bash".
  */
 export function bashFileSearch (pattern, basedir) {
   let bashCommandLine = [
@@ -45,7 +49,8 @@ export function bashFileSearch (pattern, basedir) {
   ]
 
   return Observable.create((observer) => {
-    let cp = spawn('bash', bashCommandLine, { cwd: basedir })
+    let bashName = platform() === 'darwin' ? '/usr/local/bin/bash' : 'bash'
+    let cp = spawn(bashName, bashCommandLine, { cwd: basedir })
     let outputBuffer = new Buffer(0)
     cp.stdout.on('data', (data) => {
       outputBuffer = Buffer.concat([ outputBuffer, data ])
