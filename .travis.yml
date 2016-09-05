@@ -4,7 +4,8 @@ node_js:
   - "5"
   - "4"
 before_install:
-    # Need the version of Bash (in 4.3 globs don't follow symlinks)
+    # Need to update the version of Bash (in 4.3 globs don't follow symlinks)
     - bash --version
-    - sudo apt-get update && sudo apt-get install --only-upgrade bash
+    - sudo apt-get -qq update
+    - sudo apt-get install -y bash
     - bash --version
