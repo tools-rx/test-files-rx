@@ -1,11 +1,10 @@
+sudo: required
+dist: trusty
 language: node_js
 node_js:
   - "6"
   - "5"
   - "4"
 before_install:
-    # Need to update the version of Bash (in 4.3 globs don't follow symlinks)
-    - bash --version
-    - sudo apt-get -qq update
-    - sudo apt-get install -y bash
+    # Need Bash 4.3 - globs don't follow symlinks
     - bash --version
