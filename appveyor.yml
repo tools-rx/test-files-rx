@@ -1,0 +1,23 @@
+
+platform:
+  - x64
+
+environment:
+  matrix:
+    - nodejs_version: "6"
+    - nodejs_version: "5"
+    - nodejs_version: "4"
+
+install:
+  - ps: Install-Product node $env:nodejs_version $env:platform
+  - npm install
+
+test_script:
+  # Need Bash 4.3 - globs don't follow symlinks
+  - bash --version
+  - node --version
+  - npm --version
+  # run tests
+  - npm test
+
+build: off
