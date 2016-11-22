@@ -1,6 +1,6 @@
 {
   "name": "test-files-rx",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.3",
   "description": "Tools for building directories, files, and symbolic links for creating test scenarios.",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
@@ -31,7 +31,7 @@
     ]
   },
   "dependencies": {
-    "rxjs": "^5.0.0-rc.1",
+    "rxjs": "^5.0.0-rc.4",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.5.4"
   },
@@ -42,8 +42,8 @@
     "esdoc": "^0.4.8",
     "jasmine": "^2.5.2",
     "jasmine-spec-reporter": "^2.7.0",
-    "lodash": "^4.16.4",
+    "lodash": "^4.17.2",
     "npm-run-all": "^3.1.1",
-    "standard": "^8.4.0"
+    "standard": "^8.5.0"
   }
 }
