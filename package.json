@@ -1,6 +1,6 @@
 {
   "name": "test-files-rx",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.0-development",
   "description": "Tools for building directories, files, and symbolic links for creating test scenarios.",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
@@ -10,7 +10,8 @@
     "build:js": "babel --out-dir dist src",
     "build:docs": "esdoc -c esdoc.json",
     "lint": "standard",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
     "glob",
@@ -45,7 +46,8 @@
     "jasmine-spec-reporter": "^2.7.0",
     "lodash": "^4.17.2",
     "npm-run-all": "^3.1.2",
-    "standard": "^8.6.0"
+    "standard": "^8.6.0",
+    "semantic-release": "^6.3.2"
   },
   "config": {
     "commitizen": {
