@@ -61,7 +61,7 @@
         "path": "@semantic-release/condition-travis"
       },
       {
-        "path": "condition-node-version",
+        "path": "./scripts/publish-condition.js",
         "node": "^6"
       }
     ]
