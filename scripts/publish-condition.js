@@ -26,7 +26,7 @@ function conditionNodeVersion (pluginConfig, config, callback) {
     return fail('Missing node version in the config')
   }
 
-  if (!/^6\./.test(process.versions.node) || !/^darwin/.test(process.platform)) {
+  if (!/^6\./.test(process.versions.node) || /^darwin/.test(process.platform)) {
     return fail('Not publishing from Node ' + process.versions.node + ' on ' + process.platform)
   }
 
