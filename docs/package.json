@@ -1,6 +1,6 @@
 {
   "name": "test-files-rx",
-  "version": "1.0.0-rc.3",
+  "version": "0.0.0-development",
   "description": "Tools for building directories, files, and symbolic links for creating test scenarios.",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
@@ -10,7 +10,8 @@
     "build:js": "babel --out-dir dist src",
     "build:docs": "esdoc -c esdoc.json",
     "lint": "standard",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
     "glob",
@@ -31,19 +32,38 @@
     ]
   },
   "dependencies": {
-    "rxjs": "^5.0.0-rc.4",
     "mkdirp": "^0.5.1",
-    "rimraf": "^2.5.4"
+    "rimraf": "^2.5.4",
+    "rxjs": "^5.0.1"
   },
   "devDependencies": {
+    "@semantic-release/condition-travis": "^4.1.4",
     "babel-cli": "^6.18.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "babel-preset-es2015": "^6.18.0",
+    "cz-conventional-changelog": "^1.2.0",
     "esdoc": "^0.4.8",
     "jasmine": "^2.5.2",
     "jasmine-spec-reporter": "^2.7.0",
     "lodash": "^4.17.2",
-    "npm-run-all": "^3.1.1",
-    "standard": "^8.5.0"
+    "npm-run-all": "^3.1.2",
+    "semantic-release": "^6.3.2",
+    "standard": "^8.6.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "release": {
+    "verifyConditions": [
+      {
+        "path": "@semantic-release/condition-travis"
+      },
+      {
+        "path": "./scripts/publish-condition.js",
+        "node": "^6"
+      }
+    ]
   }
 }
