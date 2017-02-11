@@ -4,7 +4,8 @@ os:
   - linux
   - osx
 cache:
-  yarn: true
+  directories:
+    - node_modules
 notifications:
   email: false
 language: node_js
