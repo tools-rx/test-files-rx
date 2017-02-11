@@ -12,6 +12,12 @@ node_js:
   - '7'
   - '6'
   - '4'
+env:
+  - INSTALL_CMD="yarn"
+  - INSTALL_CMD="yarn"
+  - INSTALL_CMD="npm install"
+install:
+  - $INSTALL_CMD
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
