@@ -5,3 +5,6 @@ tests/
 scripts/
 docs/
 esdoc.json
+package-lock.json
+appveyor.yml
+.travis.yml

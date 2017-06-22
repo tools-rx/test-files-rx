@@ -1,7 +1,12 @@
 import {Observable} from 'rxjs'
 import {spawn} from 'child_process'
 import {platform} from 'os'
-import _ from 'lodash'
+import _filter from 'lodash/fp/filter'
+import _map from 'lodash/fp/map'
+import _sortBy from 'lodash/fp/sortBy'
+import _uniq from 'lodash/fp/uniq'
+import _flow from 'lodash/fp/flow'
+
 import {unixStylePath} from './test-file-builder'
 
 /**
@@ -51,7 +56,7 @@ export function bashFileSearch (pattern, basedir) {
   return Observable.create((observer) => {
     let bashName = platform() === 'darwin' ? '/usr/local/bin/bash' : 'bash'
     let cp = spawn(bashName, bashCommandLine, { cwd: basedir })
-    let outputBuffer = new Buffer(0)
+    let outputBuffer = Buffer.alloc(0)
     cp.stdout.on('data', (data) => {
       outputBuffer = Buffer.concat([ outputBuffer, data ])
     })
@@ -60,12 +65,12 @@ export function bashFileSearch (pattern, basedir) {
       if (code) {
         observer.error('bash test should finish nicely')
       } else {
-        let matches = _(outputBuffer.toString().split(/\r*\n/))
-          .filter((t) => t !== '')
-          .map((t) => unixStylePath(t.replace(/\/$/, '')))
-          .sortBy((t) => t.toLowerCase())
-          .uniq()
-          .value()
+        let matches = _flow(
+          _filter((t) => t !== ''),
+          _map((t) => unixStylePath(t.replace(/\/$/, ''))),
+          _sortBy((t) => t.toLowerCase()),
+          _uniq
+        )(outputBuffer.toString().split(/\r*\n/))
         observer.next({ pattern, matches })
         observer.complete()
       }

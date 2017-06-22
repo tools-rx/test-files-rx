@@ -1,6 +1,6 @@
 /* eslint-env jasmine */
 
-import _ from 'lodash'
+import _sortBy from 'lodash/sortBy'
 import {bashFileSearch} from '../src/bash-file-search'
 
 const testsPath = __dirname
@@ -19,7 +19,7 @@ describe('bash file search', () => {
     bashFileSearch('**/*.js', testsPath)
       .subscribe(
         (found) => {
-          found.matches = _.sortBy(found.matches, (fn) => fn)
+          found.matches = _sortBy(found.matches, (fn) => fn)
           expect(found).toEqual(expected)
         },
         (err) => done.fail(err),

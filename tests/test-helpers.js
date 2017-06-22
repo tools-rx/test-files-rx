@@ -1,6 +1,6 @@
 /* eslint-env jasmine */
 
-import _ from 'lodash'
+import _sortBy from 'lodash/sortBy'
 
 export function concatListItems (lst, item) {
   lst.push(item)
@@ -16,5 +16,5 @@ export function getSubscriber (done) {
 }
 
 export function sortedFileList (fileList) {
-  return _.sortBy(fileList, (fn) => fn)
+  return _sortBy(fileList, (fn) => fn)
 }
