@@ -52,7 +52,12 @@
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import {Observable} from &apos;rxjs&apos;
 import {spawn} from &apos;child_process&apos;
 import {platform} from &apos;os&apos;
-import _ from &apos;lodash&apos;
+import _filter from &apos;lodash/fp/filter&apos;
+import _map from &apos;lodash/fp/map&apos;
+import _sortBy from &apos;lodash/fp/sortBy&apos;
+import _uniq from &apos;lodash/fp/uniq&apos;
+import _flow from &apos;lodash/fp/flow&apos;
+
 import {unixStylePath} from &apos;./test-file-builder&apos;
 
 /**
@@ -102,7 +107,7 @@ export function bashFileSearch (pattern, basedir) {
   return Observable.create((observer) =&gt; {
     let bashName = platform() === &apos;darwin&apos; ? &apos;/usr/local/bin/bash&apos; : &apos;bash&apos;
     let cp = spawn(bashName, bashCommandLine, { cwd: basedir })
-    let outputBuffer = new Buffer(0)
+    let outputBuffer = Buffer.alloc(0)
     cp.stdout.on(&apos;data&apos;, (data) =&gt; {
       outputBuffer = Buffer.concat([ outputBuffer, data ])
     })
@@ -111,12 +116,12 @@ export function bashFileSearch (pattern, basedir) {
       if (code) {
         observer.error(&apos;bash test should finish nicely&apos;)
       } else {
-        let matches = _(outputBuffer.toString().split(/\r*\n/))
-          .filter((t) =&gt; t !== &apos;&apos;)
-          .map((t) =&gt; unixStylePath(t.replace(/\/$/, &apos;&apos;)))
-          .sortBy((t) =&gt; t.toLowerCase())
-          .uniq()
-          .value()
+        let matches = _flow(
+          _filter((t) =&gt; t !== &apos;&apos;),
+          _map((t) =&gt; unixStylePath(t.replace(/\/$/, &apos;&apos;))),
+          _sortBy((t) =&gt; t.toLowerCase()),
+          _uniq
+        )(outputBuffer.toString().split(/\r*\n/))
         observer.next({ pattern, matches })
         observer.complete()
       }
