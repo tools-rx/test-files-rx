@@ -45,6 +45,7 @@
     "babel-preset-env": "^1.5.2",
     "cz-conventional-changelog": "^2.0.0",
     "esdoc": "^0.5.2",
+    "github-post-release": "^1.7.1",
     "jasmine": "^2.6.0",
     "lodash": "^4.17.4",
     "npm-run-all": "^4.0.2",
@@ -66,6 +67,7 @@
         "path": "./scripts/publish-condition.js",
         "node": "^6"
       }
-    ]
+    ],
+    "generateNotes": "github-post-release"
   }
 }
